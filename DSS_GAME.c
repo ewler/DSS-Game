@@ -497,6 +497,14 @@ int gameplay_logic( int argc, char *argv[] )
 	SDL_RenderCopy( g_renderer, g_pele, &l_srcRect, &l_dstRect );
 	SDL_RenderPresent( g_renderer );
 	
+	const Uint8 *keystates = SDL_GetKeyboardState(NULL);
+
+	// Definindo teclas
+	int cima_pressionado;
+	int baixo_pressionado;
+	int esquerda_pressionado;
+	int direita_pressionado;
+
 	while( g_gameState == 3 )
 	{
 
@@ -519,11 +527,36 @@ int gameplay_logic( int argc, char *argv[] )
 
 	
            		if( e.type == SDL_KEYDOWN )
-			{
+				{
 
-				if(e.key.keysym.sym == SDLK_RIGHT && e.key.keysym.sym == SDLK_UP){
-					
+					// Definindo teclas
+					cima_pressionado = keystates[SDL_SCANCODE_UP];
+					baixo_pressionado = keystates[SDL_SCANCODE_DOWN];
+					esquerda_pressionado = keystates[SDL_SCANCODE_LEFT];
+					direita_pressionado = keystates[SDL_SCANCODE_RIGHT];
 
+					if( cima_pressionado && direita_pressionado )
+					{
+						l_dstRect.x += velx;
+						l_dstRect.y -= velx;
+					} 
+					else if( cima_pressionado && esquerda_pressionado )
+					{
+						l_dstRect.x -= velx;
+						l_dstRect.y -= velx;
+					}
+					else if( baixo_pressionado && direita_pressionado )
+					{
+						l_dstRect.x += velx;
+						l_dstRect.y += velx;
+					}
+					else if( baixo_pressionado && esquerda_pressionado )
+					{
+						l_dstRect.x -= velx;
+						l_dstRect.y += velx;
+					}
+					else
+					{
            			switch( e.key.keysym.sym )
         			{
 					case SDLK_RIGHT:	
@@ -547,6 +580,7 @@ int gameplay_logic( int argc, char *argv[] )
 					case SDLK_RETURN:
 						g_gameState = 5;                                     
 						break;
+           			}
            			}	
         		}
         	}
