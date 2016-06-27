@@ -4,8 +4,8 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include "loaders_and_effects.h"
-/*
-typedef struct _melee_damager
+
+typedef struct _inimigo
 {
 	// Textura que contera o sprite e informaces da textura
 	SDL_Texture* sprite;
@@ -17,11 +17,12 @@ typedef struct _melee_damager
 	Mix_Chunk* deathSound;
 	
 	// Pontos de vida, velocidade com que se move e dano causado por contato fisico
+	int activate;
 	int healthPoints;
 	float speed;
 	int damage;
-} MeleeDamager;
-*/
+} Inimigo;
+
 
 
 typedef struct _shooter
@@ -41,6 +42,7 @@ typedef struct _shooter
 	//MagicProjectile type;
 } Shooter;
 
+int i2 = 0;
 int i = 0;
 int a = 0;
 
@@ -90,7 +92,7 @@ typedef struct _map
 	SDL_Rect snipRect;
 } Map;
 
-int tiro();
+
 
 int gameplay_logic( SDL_Window* l_window, SDL_Renderer* l_renderer )
 {
@@ -105,7 +107,7 @@ int gameplay_logic( SDL_Window* l_window, SDL_Renderer* l_renderer )
 	//Shooter beholder;
 	//Shooter necromancer;
 	//Shooter demonBoss;
-/*
+
 	// Tipos de projeteis/tiros
 	//MagicProjectile arcaneMissile;
 	MagicProjectile fireBall;
@@ -115,8 +117,8 @@ int gameplay_logic( SDL_Window* l_window, SDL_Renderer* l_renderer )
 	//MagicProjectile demonicBolt;
 
 	// Personagens que causam dano somente atraves do toque
-	MeleeDamager skeleton;
-	//MeleeDamager gatekeeper;
+	Inimigo skeleton;
+	//Inimigo gatekeeper;
 	
 	// Itens que modificam o jogador
 	//Item blueRobe;
@@ -124,10 +126,10 @@ int gameplay_logic( SDL_Window* l_window, SDL_Renderer* l_renderer )
 	//Item greenRobe;
 	
 	// Tipos de colecionaveis (geram score)
-	Collectible greenCrystal;
+	//Collectible greenCrystal;
 	//Collectible blueCrystal;
 	//Collectible redCrystal;
-*/	
+
 	
 	// Mapas do jogo
 	Map firstMap;
@@ -148,12 +150,13 @@ int gameplay_logic( SDL_Window* l_window, SDL_Renderer* l_renderer )
 	//player.healthPoints = 100;
 	player.speed = 5.0;
 	//player.damage = 0;
-	
-	MagicProjectile fireBall;
+
+
+	//quantidade de tiros
 	MagicProjectile V[50];
 
 
-	for(a=0;a<50;a++)
+	for( a=0;a<50;a++ )
 	{
 	
 	V[a].snipRect.x = 0;
@@ -173,19 +176,35 @@ int gameplay_logic( SDL_Window* l_window, SDL_Renderer* l_renderer )
 	//fireBall.hitCharacter = load_sfx( "?" );
 	fireBall.damage = 50;
 	fireBall.speed = 2.0;
-/*	
+	
 	//  Informacoes do inimigo
 	skeleton.sprite = load_texture( "images/sprites/esqueleto_80x80.png", l_window, l_renderer );
 	//skeleton.gotHit = load_sfx( "?" );
 	//skeleton.deathSound = load_sfx( "?" );
 	skeleton.healthPoints = 100;
-	skeleton.speed = 3.5;
+	skeleton.speed = 1.5;
 	skeleton.damage = 30;
 	
+	//quantidade de inimigos
+	Inimigo E[5];
+
+	for( a=0; a<5; a++ )
+	{
+		E[a].snipRect.x = 0;
+		E[a].snipRect.y = 0;
+		E[a].snipRect.h = 80;
+		E[a].snipRect.w = 80;
+		E[a].presentedRect.x = 0;
+		E[a].presentedRect.y = (0 + a*100); 
+		E[a].presentedRect.w = 80;
+		E[a].presentedRect.h = 80; 
+		E[a].activate = 0;
+	}
+
 	// Informacoes do colecionavel
-	greenCrystal.sprite = load_texture( "images/sprites/green_crystal.png", l_window, l_renderer );
+	//greenCrystal.sprite = load_texture( "images/sprites/green_crystal.png", l_window, l_renderer );
 	//greenCrystal.collectedSound = load_sfx( "?" );
-*/	
+	
 	// Informacoes sobre o mapa
 	firstMap.texture = load_texture( "images/levels/4_doors.png", l_window, l_renderer );
 
@@ -278,10 +297,42 @@ int gameplay_logic( SDL_Window* l_window, SDL_Renderer* l_renderer )
 							V[a].presentedRect.x += fireBall.speed;
 							break;
 					}
+				
 					SDL_RenderCopy( l_renderer, fireBall.sprite, &V[a].snipRect, &V[a].presentedRect );
 				}
 			}
-        	
+           
+            for( a=0; a<5; a++)
+            {
+            	if (E[a].activate == 1)
+            	{
+					if( player.presentedRect.x > E[a].presentedRect.x )
+					{
+						E[a].presentedRect.x += skeleton.speed;
+					}
+					if( player.presentedRect.x < E[a].presentedRect.x )
+					{
+						E[a].presentedRect.x -= skeleton.speed;
+					}
+					if( player.presentedRect.y > E[a].presentedRect.y )
+					{
+						E[a].presentedRect.y += skeleton.speed;
+					}
+					if( player.presentedRect.y < E[a].presentedRect.y )
+					{
+						E[a].presentedRect.y -= skeleton.speed;
+					}
+					for (i2=0; i2<50; i2++)
+					{
+						if( V[i2].presentedRect.x == E[a].presentedRect.x && V[i2].presentedRect.y == E[a].presentedRect.y )
+						{
+							E[a].activate = 0;
+						}
+					}
+					SDL_RenderCopy( l_renderer, skeleton.sprite, &E[a].snipRect, &E[a].presentedRect );
+				}							
+            }
+
         SDL_RenderPresent( l_renderer );
 
 		while( SDL_PollEvent( &e ) != 0 )
@@ -292,6 +343,7 @@ int gameplay_logic( SDL_Window* l_window, SDL_Renderer* l_renderer )
                 l_gameState = -1;
             }
 
+            
     		if( e.type == SDL_KEYDOWN )
 			{
 				// Definindo teclas com o scancode
@@ -505,9 +557,13 @@ int gameplay_logic( SDL_Window* l_window, SDL_Renderer* l_renderer )
 							}
 							break;
 						
-						//case SDLK_RETURN:
-						//	l_gameState = -1;                                     
-						//	break;
+						case SDLK_RETURN:
+							
+							for(a=0; a<5; a++)
+							{
+								E[a].activate = 1;
+							}                                  
+							break;
         			}
     			}	
     		}
